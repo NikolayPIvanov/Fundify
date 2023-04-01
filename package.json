@@ -4,15 +4,20 @@
   "description": "Fundify is a decentralized crowdfunding platform that allows creators to raise funds for their projects and ideas without the need for intermediaries. The platform uses blockchain technology to ensure secure and transparent transactions, and enables creators to connect with backers from all over the world.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:local": "npx hardhat run scripts/deploy-upgradeable.js --network localhost"
   },
   "author": "Nikolay Ivanov",
   "license": "ISC",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@openzeppelin/hardhat-upgrades": "^1.22.1",
+    "ethers": "^5.7.2",
     "hardhat": "^2.13.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.8.2"
+    "@openzeppelin/contracts": "^4.8.2",
+    "@openzeppelin/contracts-upgradeable": "^4.8.2"
   }
 }

@@ -10,7 +10,14 @@ import {Events} from "./events/ProjectEvents.sol";
 
 /// @custom:security-contact nick.ivanov98@gmail.com
 contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
-    mapping(address => ProjectStructure[]) public projects;
+    uint256 public constant MAX_PROJECT_NAME_LENGTH = 32;
+    uint256 public constant MAX_PROJECT_DESCRIPTION_LENGTH = 32;
+    uint256 public constant MIN_PROJECT_NAME_LENGTH = 1;
+    uint256 public constant MIN_PROJECT_DESCRIPTION_LENGTH = 1;
+
+    event ProjectCreated(address indexed owner, uint256 indexed projectId);
+
+    ProjectStructure[] public projects;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -19,6 +26,12 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
 
     function initialize() public initializer {
         __Ownable_init();
+    }
+
+    /// @notice Returns all projects.
+    /// dcc60128  =>  getProjects()
+    function getProjects() public view returns (ProjectStructure[] memory) {
+        return projects;
     }
 
     /// @notice Creates a project with the given name and description.
@@ -40,9 +53,8 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
         onlyValidProjectDescription(description)
     {
         ProjectStructure memory project = ProjectStructure(name, description);
-        ProjectStructure[] storage userProjects = projects[msg.sender];
-        userProjects.push(project);
-        emit Events.ProjectCreated(msg.sender, userProjects.length);
+        projects.push(project);
+        emit ProjectCreated(msg.sender, projects.length);
     }
 
     function _isOnlyWhitespace(bytes memory data) internal pure returns (bool) {

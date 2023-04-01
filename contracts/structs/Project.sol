@@ -5,4 +5,4 @@ pragma solidity ^0.8.9;
 struct Project {
     bytes32 name;
     string description;
-};
+}

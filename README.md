@@ -9,6 +9,26 @@ Fundify also includes a dispute resolution process to ensure that any issues bet
 
 The platform is accessible through a user-friendly dApp that enables users to browse and search for projects, view project details, and contribute to projects. Fundify provides a new and innovative way for creators to fund their projects, while giving backers the opportunity to support projects they believe in and receive rewards for their contributions. With Fundify, creators can bring their ideas to life and make a difference in the world, one project at a time.
 
+# Crowdfunding
+
+Crowdfunding is a popular method of raising funds for projects or businesses, often using the internet as a platform to reach a large audience. Crowdfunding projects typically work by following these steps:
+
+Project Creation: A creator comes up with an idea for a project and creates a campaign on a crowdfunding platform. The creator sets a funding goal and a deadline for the campaign.
+
+Promotion: The creator promotes the campaign to potential backers, often using social media or other marketing strategies to attract attention.
+
+Backer Pledges: Backers can pledge money towards the campaign, often in exchange for rewards or perks. The creator may set different pledge tiers with different rewards, such as a discount on the final product or a personal thank you message.
+
+Funding Goal Reached: If the campaign reaches its funding goal before the deadline, the creator receives the funds and can begin working on the project.
+
+Funding Goal Not Reached: If the campaign does not reach its funding goal before the deadline, the backers are not charged and the creator does not receive any funds.
+
+Project Completion: Once the creator has received the funds, they work on completing the project and delivering the rewards to backers as promised.
+
+Crowdfunding can be used for a variety of projects, such as launching a new product, funding a creative project, or supporting a cause. Crowdfunding platforms typically charge a fee for their services, often a percentage of the funds raised.
+
+Decentralized crowdfunding platforms, which use blockchain technology and smart contracts, offer a new way of crowdfunding that eliminates the need for intermediaries and allows for greater transparency and security. These platforms typically use cryptocurrency as a means of payment and rely on smart contracts to enforce the terms of the campaign.
+
 # Requirements
 
 Smart Contracts: The platform should be built on a blockchain (such as Ethereum) and leverage smart contracts to manage the crowdfunding process. Smart contracts are self-executing contracts with the terms of the agreement between buyer and seller being directly written into code. They ensure that funds are held securely, and released only when certain conditions are met, such as when the funding goal is reached.

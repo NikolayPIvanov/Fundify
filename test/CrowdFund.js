@@ -45,6 +45,8 @@ describe("CrowdFund", () => {
                     const sender = accounts[0];
                     const name = "Test Project";
                     const description = "Test Description";
+                    const goal = 1000;
+                    const deadline = (await time.latest()) + 1000;
 
                     const projects = await crowdFund.getProjects();
                     const expected = projects.length + 1;
@@ -52,16 +54,19 @@ describe("CrowdFund", () => {
                     await expect(
                         crowdFund
                             .connect(sender)
-                            .createProject(toBytes(name), toBytes(description)))
+                            .createProject(toBytes(name), toBytes(description), goal, deadline))
                         .to.emit(crowdFund, "ProjectCreated")
                         .withArgs(sender.address, expected);
 
                     const updatedProjects = await crowdFund.getProjects();
                     expect(updatedProjects.length).to.equal(expected);
 
-                    expect(toString(updatedProjects[expected - 1].name)).to.equal(name);
-                    expect(toString(updatedProjects[expected - 1].description)).to.equal(description);
-                    expect(updatedProjects[expected - 1].owner).to.equal(sender.address);
+                    const project = updatedProjects[expected - 1];
+                    expect(toString(project.name)).to.equal(name);
+                    expect(toString(project.description)).to.equal(description);
+                    expect(project.owner).to.equal(sender.address);
+                    expect(project.goal).to.equal(goal);
+                    expect(project.deadline).to.equal(deadline);
                 });
             })
 
@@ -71,6 +76,8 @@ describe("CrowdFund", () => {
                         const { crowdFund, accounts } = await loadFixture(deployContract);
                         const sender = accounts[0];
                         const description = "Test Description";
+                        const goal = 1000;
+                        const deadline = (await time.latest()) + 1000;
 
                         const projects = await crowdFund.getProjects();
                         const expected = projects.length;
@@ -78,7 +85,7 @@ describe("CrowdFund", () => {
                         await expect(
                             crowdFund
                                 .connect(sender)
-                                .createProject(toBytes(name), toBytes(description)))
+                                .createProject(toBytes(name), toBytes(description), goal, deadline))
                             .to.revertedWith("Invalid project name.")
 
                         const updatedProjects = await crowdFund.getProjects();
@@ -91,6 +98,8 @@ describe("CrowdFund", () => {
                         const { crowdFund, accounts } = await loadFixture(deployContract);
                         const sender = accounts[0];
                         const name = "Test Name";
+                        const goal = 1000;
+                        const deadline = (await time.latest()) + 1000;
 
                         const projects = await crowdFund.getProjects();
                         const expected = projects.length;
@@ -98,7 +107,7 @@ describe("CrowdFund", () => {
                         await expect(
                             crowdFund
                                 .connect(sender)
-                                .createProject(toBytes(name), toBytes(description)))
+                                .createProject(toBytes(name), toBytes(description), goal, deadline))
                             .to.revertedWith("Invalid project description.")
 
                         const updatedProjects = await crowdFund.getProjects();

@@ -6,4 +6,6 @@ struct ProjectStructure {
     bytes name;
     bytes description;
     address owner;
+    uint256 goal;
+    uint256 deadline;
 }

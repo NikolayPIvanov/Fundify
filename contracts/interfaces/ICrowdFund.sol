@@ -6,6 +6,8 @@ import {ProjectStructure} from "../structs/Project.sol";
 interface ICrowdFund {
     function createProject(
         bytes calldata name,
-        bytes calldata description
+        bytes calldata description,
+        uint256 goal,
+        uint256 deadline
     ) external payable;
 }

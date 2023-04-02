@@ -6,18 +6,15 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 
 import {ICrowdFund} from "./interfaces/ICrowdFund.sol";
 import {ProjectStructure} from "./structs/Project.sol";
-import {Events} from "./events/ProjectEvents.sol";
+import {LibProject} from "./libraries/LibProject.sol";
 
 /// @custom:security-contact nick.ivanov98@gmail.com
 contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
-    uint256 public constant MAX_PROJECT_NAME_LENGTH = 32;
-    uint256 public constant MAX_PROJECT_DESCRIPTION_LENGTH = 32;
-    uint256 public constant MIN_PROJECT_NAME_LENGTH = 1;
-    uint256 public constant MIN_PROJECT_DESCRIPTION_LENGTH = 1;
+    ProjectStructure[] public projects;
+
+    mapping(address => ProjectStructure[]) public addressProjects;
 
     event ProjectCreated(address indexed owner, uint256 indexed projectId);
-
-    ProjectStructure[] public projects;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -34,9 +31,18 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
         return projects;
     }
 
+    function getAddressProjects(
+        address _owner
+    ) public view returns (ProjectStructure[] memory) {
+        require(_owner != address(0), "CrowdFund: Address cannot be zero");
+        return addressProjects[_owner];
+    }
+
     /// @notice Creates a project with the given name and description.
     /// @param name The name of the project.
     /// @param description The description of the project.
+    /// @param goal The goal of the project.
+    /// @param deadline The deadline of the project.
     /// @dev The project name and description cannot be empty.
     /// @dev The project name and description cannot be longer than 32 bytes.
     /// @dev The project name and description cannot be shorter than 1 byte.
@@ -44,48 +50,18 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
     /// 531f9ac8  =>  createProject(bytes,bytes)
     function createProject(
         bytes calldata name,
-        bytes calldata description
-    )
-        external
-        payable
-        override
-        onlyValidProjectName(name)
-        onlyValidProjectDescription(description)
-    {
-        ProjectStructure memory project = ProjectStructure(
+        bytes calldata description,
+        uint256 goal,
+        uint256 deadline
+    ) external payable {
+        ProjectStructure memory project = LibProject.createProject(
             name,
             description,
-            msg.sender
+            goal,
+            deadline
         );
         projects.push(project);
+        addressProjects[msg.sender].push(project);
         emit ProjectCreated(msg.sender, projects.length);
-    }
-
-    function _isOnlyWhitespace(bytes memory data) internal pure returns (bool) {
-        for (uint256 i = 0; i < data.length; i++) {
-            // Whitespace is 0x20
-            if (data[i] != 0x20) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    modifier onlyValidProjectName(bytes memory name) {
-        require(
-            name.length > 0 && name.length <= 32 && !_isOnlyWhitespace(name),
-            "Invalid project name."
-        );
-        _;
-    }
-
-    modifier onlyValidProjectDescription(bytes memory description) {
-        require(
-            description.length > 0 &&
-                description.length <= 32 &&
-                !_isOnlyWhitespace(description),
-            "Invalid project description."
-        );
-        _;
     }
 }

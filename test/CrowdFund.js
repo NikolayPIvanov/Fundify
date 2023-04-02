@@ -5,6 +5,7 @@ const {
     loadFixture,
 } = require("@nomicfoundation/hardhat-network-helpers");
 
+
 describe("CrowdFund", () => {
     const toBytes = (value) => {
         const bytes = ethers.utils.toUtf8Bytes(value);
@@ -48,14 +49,15 @@ describe("CrowdFund", () => {
                     const goal = 1000;
                     const deadline = (await time.latest()) + 1000;
 
+                    const contractInstanceWithLibraryABI = await ethers.getContractAt("Events", crowdFund.address, sender)
+
                     const projectCount = await crowdFund.projectCount();
                     const expected = projectCount + 1;
 
                     await expect(
                         crowdFund
-                            .connect(sender)
                             .createProject(toBytes(name), toBytes(description), goal, deadline))
-                        .to.emit(crowdFund, "ProjectCreated")
+                        .to.emit(contractInstanceWithLibraryABI, "ProjectCreated")
                         .withArgs(sender.address, expected);
 
                     const updatedProjectCount = await crowdFund.projectCount();

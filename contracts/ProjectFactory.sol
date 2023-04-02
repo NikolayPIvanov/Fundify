@@ -3,10 +3,9 @@ pragma solidity ^0.8.9;
 
 import {Project} from "./structs/Project.sol";
 import {LibProject} from "./libraries/LibProject.sol";
+import {Events} from "./events/ProjectEvents.sol";
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
-import "hardhat/console.sol";
 
 contract ProjectFactory is Initializable {
     Project[] public projectInstances;
@@ -15,8 +14,6 @@ contract ProjectFactory is Initializable {
     // Mappings to show the ownership of the projects to a given address.
     // Will be used to get the projects for a given address
     mapping(address => uint256[]) public ownerToProjects;
-
-    event ProjectCreated(address indexed owner, uint256 indexed projectId);
 
     function initialize() public virtual onlyInitializing {}
 
@@ -69,6 +66,6 @@ contract ProjectFactory is Initializable {
         projectInstances.push(project);
         ownerToProjects[msg.sender].push(projectInstances.length);
 
-        emit ProjectCreated(msg.sender, projectInstances.length);
+        emit Events.ProjectCreated(msg.sender, projectInstances.length);
     }
 }

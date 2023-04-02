@@ -8,4 +8,5 @@ struct ProjectStructure {
     address owner;
     uint256 goal;
     uint256 deadline;
+    uint256 totalContributions;
 }

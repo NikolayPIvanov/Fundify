@@ -50,3 +50,13 @@ Reporting and Analytics: The platform should include reporting and analytics fea
 Security: The platform should be built with security in mind, including measures such as encryption, secure user authentication, and regular security audits.
 
 Scalability: The platform should be designed with scalability in mind, to ensure that it can handle a growing number of users and projects over time. This can be achieved through the use of cloud infrastructure and other scalability techniques.
+
+
+## Steps
+- Create Project
+- Contribute to it.
+- Withdraw if you want to back-off from the project.
+- Withdraw the contributions of the requirements are met.
+
+- Tiers
+    - Attestations - 1155 tokens

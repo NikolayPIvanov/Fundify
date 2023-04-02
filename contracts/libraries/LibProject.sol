@@ -18,7 +18,8 @@ library LibProject {
         require(goal > 0, "Invalid project goal.");
         require(deadline > block.timestamp, "Invalid project deadline.");
 
-        return ProjectStructure(name, description, msg.sender, goal, deadline);
+        return
+            ProjectStructure(name, description, msg.sender, goal, deadline, 0);
     }
 
     function _isValid(bytes memory value) internal pure returns (bool) {

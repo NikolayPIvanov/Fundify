@@ -52,7 +52,11 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
         onlyValidProjectName(name)
         onlyValidProjectDescription(description)
     {
-        ProjectStructure memory project = ProjectStructure(name, description);
+        ProjectStructure memory project = ProjectStructure(
+            name,
+            description,
+            msg.sender
+        );
         projects.push(project);
         emit ProjectCreated(msg.sender, projects.length);
     }

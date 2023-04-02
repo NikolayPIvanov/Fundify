@@ -5,4 +5,5 @@ pragma solidity ^0.8.9;
 struct ProjectStructure {
     bytes name;
     bytes description;
+    address owner;
 }

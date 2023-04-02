@@ -61,6 +61,7 @@ describe("CrowdFund", () => {
 
                     expect(toString(updatedProjects[expected - 1].name)).to.equal(name);
                     expect(toString(updatedProjects[expected - 1].description)).to.equal(description);
+                    expect(updatedProjects[expected - 1].owner).to.equal(sender.address);
                 });
             })
 

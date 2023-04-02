@@ -48,8 +48,8 @@ describe("CrowdFund", () => {
                     const goal = 1000;
                     const deadline = (await time.latest()) + 1000;
 
-                    const projects = await crowdFund.getProjects();
-                    const expected = projects.length + 1;
+                    const projectCount = await crowdFund.projectCount();
+                    const expected = projectCount + 1;
 
                     await expect(
                         crowdFund
@@ -58,10 +58,11 @@ describe("CrowdFund", () => {
                         .to.emit(crowdFund, "ProjectCreated")
                         .withArgs(sender.address, expected);
 
-                    const updatedProjects = await crowdFund.getProjects();
-                    expect(updatedProjects.length).to.equal(expected);
+                    const updatedProjectCount = await crowdFund.projectCount();
+                    expect(updatedProjectCount).to.equal(expected);
 
-                    const project = updatedProjects[expected - 1];
+                    const projects = await crowdFund.projects(sender.address);
+                    const project = projects[expected - 1];
                     expect(toString(project.name)).to.equal(name);
                     expect(toString(project.description)).to.equal(description);
                     expect(project.owner).to.equal(sender.address);
@@ -79,7 +80,7 @@ describe("CrowdFund", () => {
                         const goal = 1000;
                         const deadline = (await time.latest()) + 1000;
 
-                        const projects = await crowdFund.getProjects();
+                        const projects = await crowdFund.projects(sender.address);
                         const expected = projects.length;
 
                         await expect(
@@ -88,7 +89,7 @@ describe("CrowdFund", () => {
                                 .createProject(toBytes(name), toBytes(description), goal, deadline))
                             .to.revertedWith("Invalid project name.")
 
-                        const updatedProjects = await crowdFund.getProjects();
+                        const updatedProjects = await crowdFund.projects(sender.address);
                         expect(updatedProjects.length).to.equal(expected);
                     });
                 });
@@ -101,7 +102,7 @@ describe("CrowdFund", () => {
                         const goal = 1000;
                         const deadline = (await time.latest()) + 1000;
 
-                        const projects = await crowdFund.getProjects();
+                        const projects = await crowdFund.projects(sender.address);
                         const expected = projects.length;
 
                         await expect(
@@ -110,7 +111,7 @@ describe("CrowdFund", () => {
                                 .createProject(toBytes(name), toBytes(description), goal, deadline))
                             .to.revertedWith("Invalid project description.")
 
-                        const updatedProjects = await crowdFund.getProjects();
+                        const updatedProjects = await crowdFund.projects(sender.address);
                         expect(updatedProjects.length).to.equal(expected);
                     });
                 });

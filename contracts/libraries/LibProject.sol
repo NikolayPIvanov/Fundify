@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import {ProjectStructure} from "../structs/Project.sol";
+import {Project} from "../structs/Project.sol";
 
 library LibProject {
     uint256 public constant MAX_PROJECT_NAME_LENGTH = 32;
@@ -12,14 +12,13 @@ library LibProject {
         bytes calldata description,
         uint256 goal,
         uint256 deadline
-    ) internal view returns (ProjectStructure memory) {
+    ) internal view returns (Project memory) {
         require(_isValid(name), "Invalid project name.");
         require(_isValid(description), "Invalid project description.");
         require(goal > 0, "Invalid project goal.");
         require(deadline > block.timestamp, "Invalid project deadline.");
 
-        return
-            ProjectStructure(name, description, msg.sender, goal, deadline, 0);
+        return Project(name, description, msg.sender, goal, deadline, 0);
     }
 
     function _isValid(bytes memory value) internal pure returns (bool) {

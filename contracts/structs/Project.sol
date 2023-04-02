@@ -2,7 +2,7 @@
 pragma solidity ^0.8.9;
 
 /// @custom:security-contact nick.ivanov98@gmail.com
-struct ProjectStructure {
+struct Project {
     bytes name;
     bytes description;
     address owner;

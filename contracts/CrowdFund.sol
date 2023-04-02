@@ -2,91 +2,28 @@
 pragma solidity ^0.8.9;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 import {ICrowdFund} from "./interfaces/ICrowdFund.sol";
-import {ProjectStructure} from "./structs/Project.sol";
+import {Project} from "./structs/Project.sol";
 import {LibProject} from "./libraries/LibProject.sol";
 
+import {ProjectFactory} from "./ProjectFactory.sol";
+
 /// @custom:security-contact nick.ivanov98@gmail.com
-contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
-    // Mapping used to show all the projects
-    ProjectStructure[] public projects;
-
-    // Mappings to show the ownership of the projects to a given address
-    // This can be used to get the projects for a given address
-    mapping(address => uint256[]) public addressProjects;
-
-    // Mapping to show the contributions of each address to each project and the amount of contributions
-    mapping(address => mapping(uint256 => uint256)) public contributions;
-
-    event ProjectCreated(address indexed owner, uint256 indexed projectId);
+contract CrowdFund is ICrowdFund, ProjectFactory, OwnableUpgradeable {
+    // Mappings to show the contributions of a given address to a given project
+    mapping(uint256 => mapping(address => uint256)) public contributions;
+    // Mappings to show all the contributions of a given address to projects
+    mapping(address => uint256[]) public addressContributions;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
 
-    function initialize() public initializer {
+    function initialize() public override initializer {
+        ProjectFactory.initialize();
         __Ownable_init();
-    }
-
-    /// @notice Returns all projects.
-    /// dcc60128  =>  getProjects()
-    function getProjects() external view returns (ProjectStructure[] memory) {
-        return projects;
-    }
-
-    /// @param _owner The address of the owner.
-    /// @return result The projects of the given address.
-    /// @dev The address cannot be the zero address.
-    /// 66540c33  =>  getAddressProjects(address)
-    function getAddressProjects(
-        address _owner
-    ) external view returns (ProjectStructure[] memory) {
-        require(_owner != address(0), "CrowdFund: Address cannot be zero");
-
-        uint256[] memory projectIds = addressProjects[_owner];
-        uint256 counter = 0;
-        ProjectStructure[] memory result = new ProjectStructure[](
-            projectIds.length
-        );
-
-        // Traverse the project ids. Project Ids are the index in the projects array.
-        for (uint256 i = 0; i < projectIds.length; i++) {
-            ProjectStructure memory project = projects[projectIds[i]];
-            result[counter] = project;
-            counter++;
-        }
-
-        return result;
-    }
-
-    /// @notice Creates a project with the given name and description.
-    /// @param name The name of the project.
-    /// @param description The description of the project.
-    /// @param goal The goal of the project.
-    /// @param deadline The deadline of the project.
-    /// @dev The project name and description cannot be empty.
-    /// @dev The project name and description cannot be longer than 32 bytes.
-    /// @dev The project name and description cannot be shorter than 1 byte.
-    /// @dev The project name and description cannot contain only whitespace.
-    /// 531f9ac8  =>  createProject(bytes,bytes)
-    function createProject(
-        bytes calldata name,
-        bytes calldata description,
-        uint256 goal,
-        uint256 deadline
-    ) external payable {
-        ProjectStructure memory project = LibProject.createProject(
-            name,
-            description,
-            goal,
-            deadline
-        );
-        projects.push(project);
-        addressProjects[msg.sender].push(projects.length);
-        emit ProjectCreated(msg.sender, projects.length);
     }
 
     /// @param _projectId The id of the project.
@@ -97,25 +34,44 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
     /// c1cbbca7  =>  contribute(uint256) (external)
     function contribute(uint256 _projectId) external payable {
         require(
-            _projectId < projects.length,
+            _projectId < projectInstances.length,
             "CrowdFund: Project does not exist"
         );
         require(
-            projects[_projectId].deadline > block.timestamp,
+            projectInstances[_projectId].deadline > block.timestamp,
             "CrowdFund: Project deadline has passed"
         );
         require(
             msg.value > 0,
             "CrowdFund: Contribution amount must be greater than zero"
         );
+
+        uint256 totalContributions = projectInstances[_projectId]
+            .totalContributions;
+
         require(
-            projects[_projectId].totalContributions +=
-                msg.value <= projects[_projectId].goal,
+            totalContributions + msg.value <= projectInstances[_projectId].goal,
             "CrowdFund: Contribution amount must not exceed project goal"
         );
 
-        contributions[msg.sender][_projectId] += msg.value;
-        projects[_projectId].totalContributions += msg.value;
+        // Add the project id to the addressContributions mapping if the address has not contributed to the project before
+        uint256[] storage contributedProjects = addressContributions[
+            msg.sender
+        ];
+        bool isContributor = false;
+        for (uint256 i = 0; i < contributedProjects.length; i++) {
+            if (contributedProjects[i] == _projectId) {
+                isContributor = true;
+                break;
+            }
+        }
+
+        if (!isContributor) {
+            contributedProjects.push(_projectId);
+        }
+
+        contributions[_projectId][msg.sender] += msg.value;
+        projectInstances[_projectId].totalContributions += msg.value;
     }
 
     /// @param _projectId The id of the project..
@@ -127,27 +83,84 @@ contract CrowdFund is ICrowdFund, Initializable, OwnableUpgradeable {
         uint256 _amount
     ) external {
         require(
-            _projectId < projects.length,
+            _projectId < projectInstances.length,
             "CrowdFund: Project does not exist"
         );
         require(
-            projects[_projectId].deadline > block.timestamp,
+            projectInstances[_projectId].deadline > block.timestamp,
             "CrowdFund: Project deadline has passed"
         );
         require(
-            contributions[msg.sender][_projectId] >= _amount,
+            contributions[_projectId][msg.sender] >= _amount,
             "CrowdFund: Invalid contribution withdraw amount"
         );
 
-        contributions[msg.sender][_projectId] -= _amount;
-        projects[_projectId].totalContributions -= _amount;
+        contributions[_projectId][msg.sender] -= _amount;
+        projectInstances[_projectId].totalContributions -= _amount;
+
+        // Delete the mapping if the contribution amount is zero
+        if (contributions[_projectId][msg.sender] == 0) {
+            delete contributions[_projectId][msg.sender];
+            uint256[] storage projectIds = addressContributions[msg.sender];
+
+            // Delete the address from the contributors array finding its index first, then switch it with the last element and then pop the last element
+            uint256 index;
+            for (uint256 i = 0; i < projectIds.length; i++) {
+                if (projectIds[i] == _projectId) {
+                    index = i;
+                    break;
+                }
+            }
+
+            projectIds[index] = projectIds[projectIds.length - 1];
+            projectIds.pop();
+        }
 
         // TODO: maybe use call approach with abi
         payable(msg.sender).transfer(_amount);
+    }
 
-        // Delete the mapping if the contribution amount is zero
-        if (contributions[msg.sender][_projectId] == 0) {
-            delete contributions[msg.sender][_projectId];
-        }
+    modifier onlyProjectOwner(uint256 _projectId) {
+        require(
+            projectInstances[_projectId].owner == msg.sender,
+            "CrowdFund: Only project owner can call this function"
+        );
+        _;
+    }
+
+    function withdraw(
+        uint256 _projectId
+    ) external onlyProjectOwner(_projectId) {
+        // Only can withdraw the amount of the goal
+        // Only can withdraw if the deadline has passed and goal has been reached
+
+        Project memory project = projectInstances[_projectId];
+
+        require(
+            project.deadline < block.timestamp,
+            "CrowdFund: Project deadline has not passed"
+        );
+
+        require(
+            project.totalContributions >= project.goal,
+            "CrowdFund: Project goal has not been reached"
+        );
+
+        payable(msg.sender).transfer(project.totalContributions);
+    }
+
+    function returnContributions(uint256 _projectId) external view {
+        Project memory project = projectInstances[_projectId];
+
+        // Only can return the contributions if the deadline has passed and goal has not been reached
+        require(
+            project.deadline >= block.timestamp,
+            "CrowdFund: Project deadline has not passed"
+        );
+
+        require(
+            project.totalContributions < project.goal,
+            "CrowdFund: Project goal has not been reached"
+        );
     }
 }

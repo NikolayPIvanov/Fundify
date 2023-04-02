@@ -41,8 +41,3 @@ jobs:
 
       - name: Run tests
         run: npx hardhat test
-        
-      - name: solidity-metrics-action
-      # You may pin to the exact commit or the version.
-      # uses: tintinweb/solidity-metrics-action@bd657bf46874a02df889d5d402afcd803d5d31a4
-        uses: tintinweb/solidity-metrics-action@v1

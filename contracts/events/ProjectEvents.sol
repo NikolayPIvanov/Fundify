@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-library Events {
-    event ProjectCreated(address indexed owner, uint256 indexed projectId);
+library ProjectEvents {
+    event ProjectCreated(
+        uint256 projectId,
+        string name,
+        string description,
+        string imageLink,
+        uint256 fundingGoal,
+        uint256 deadline,
+        address creator
+    );
+
+    event FundingGoalReached(uint256 projectId, uint256 fundsRaised);
 }

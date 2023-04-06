@@ -13,4 +13,5 @@ library ProjectEvents {
     );
 
     event FundingGoalReached(uint256 projectId, uint256 fundsRaised);
+    event ProjectCompleted(uint256 projectId, uint256 fundsRaised);
 }

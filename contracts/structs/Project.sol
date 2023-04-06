@@ -9,6 +9,7 @@ struct Project {
     uint fundingGoal;
     uint fundsRaised;
     uint deadline;
+    bool completed;
     address payable creator;
     mapping(address => uint256) contributions;
 }

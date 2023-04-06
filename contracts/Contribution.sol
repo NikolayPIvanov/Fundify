@@ -7,8 +7,14 @@ import {Project} from "./structs/Project.sol";
 import {LibContributions} from "./libraries/LibContributions.sol";
 
 contract Contribution is ProjectFactory {
+    mapping(address => uint256[]) public userContributions;
+
     function initialize() public virtual override onlyInitializing {
         ProjectFactory.initialize();
+    }
+
+    function getUserContributions() external view returns (uint256[] memory) {
+        return userContributions[msg.sender];
     }
 
     /**
@@ -41,6 +47,7 @@ contract Contribution is ProjectFactory {
         Project storage project = projects[_projectId];
         _project.contributions[msg.sender] += msg.value;
         _project.fundsRaised += msg.value;
+        userContributions[msg.sender].push(_projectId); // add project ID to user's contributions
 
         emit ContributionEvents.FundsContributed(
             _projectId,
@@ -61,7 +68,7 @@ contract Contribution is ProjectFactory {
              or allows contributors to withdraw their contributions if the deadline has passed and the funding goal was not met.
         @param _projectId The ID of the project to withdraw funds from.
             Requirements:
-            The project deadline must have passed.
+            The project deadline must have passed if creator is withdrawing.
             If the project has met its funding goal, only the project creator can withdraw funds and must not have already done so.
             If the project has not met its funding goal, the contributor must have made a contribution and must have funds to withdraw.
             The project must not have already been completed.
@@ -74,6 +81,8 @@ contract Contribution is ProjectFactory {
             "Project deadline has not passed yet"
         );
         if (_project.fundsRaised >= _project.fundingGoal) {
+            // Withdraw only if the project succeeded to raise the goal and the deadline has passed.
+            // Withdraw only if you are the creator.
             require(
                 msg.sender == _project.creator,
                 "Only project creator can withdraw funds"
@@ -81,11 +90,31 @@ contract Contribution is ProjectFactory {
             require(!_project.completed, "Funds have already been withdrawn");
             _project.creator.transfer(_project.fundsRaised);
             _project.completed = true;
+
+            emit ProjectEvents.ProjectCompleted(
+                _projectId,
+                _project.fundsRaised
+            );
         } else {
+            // Withdraw only if the project failed to raise the goal and the deadline has passed.
+            require(
+                _project.fundsRaised < _project.fundingGoal,
+                "Funding goals were met"
+            );
             uint256 amount = _project.contributions[msg.sender];
             require(amount > 0, "No funds to withdraw");
             _project.contributions[msg.sender] = 0;
             payable(msg.sender).transfer(amount);
+
+            // Remove project ID from userContributions mapping
+            uint256[] storage userProjects = userContributions[msg.sender];
+            for (uint i = 0; i < userProjects.length; i++) {
+                if (userProjects[i] == _projectId) {
+                    userProjects[i] = userProjects[userProjects.length - 1];
+                    userProjects.pop();
+                    break;
+                }
+            }
 
             emit ContributionEvents.ContributionWithdrawn(
                 _projectId,

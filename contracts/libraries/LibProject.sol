@@ -31,6 +31,7 @@ library LibProject {
         project.imageLink = _imageLink;
         project.fundingGoal = _fundingGoal;
         project.fundsRaised = 0;
+        project.completed = false;
         project.deadline = block.timestamp + _deadline;
         project.creator = payable(msg.sender);
     }

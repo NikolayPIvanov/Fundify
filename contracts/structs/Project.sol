@@ -10,3 +10,8 @@ struct Project {
     uint256 deadline;
     uint256 totalContributions;
 }
+
+struct ProjectContribution {
+    uint256 projectId;
+    uint256 amount;
+}

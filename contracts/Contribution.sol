@@ -3,6 +3,8 @@ pragma solidity ^0.8.9;
 
 import {ProjectFactory} from "./ProjectFactory.sol";
 import {Project} from "./structs/Project.sol";
+import {ContributionEvents} from "./events/ContributionEvents.sol";
+import {ProjectEvents} from "./events/ProjectEvents.sol";
 
 import {LibContributions} from "./libraries/LibContributions.sol";
 
@@ -39,12 +41,13 @@ contract Contribution is ProjectFactory {
             "CrowdFund: Project does not exist"
         );
         require(msg.value > 0, "Contribution must be greater than 0");
+
+        Project storage _project = projects[_projectId];
         require(
             block.timestamp <= _project.deadline,
             "Project deadline has passed"
         );
 
-        Project storage project = projects[_projectId];
         _project.contributions[msg.sender] += msg.value;
         _project.fundsRaised += msg.value;
         userContributions[msg.sender].push(_projectId); // add project ID to user's contributions
@@ -55,10 +58,10 @@ contract Contribution is ProjectFactory {
             msg.value
         );
 
-        if (project.fundsRaised >= project.fundingGoal) {
+        if (_project.fundsRaised >= _project.fundingGoal) {
             emit ProjectEvents.FundingGoalReached(
                 _projectId,
-                project.fundsRaised
+                _project.fundsRaised
             );
         }
     }

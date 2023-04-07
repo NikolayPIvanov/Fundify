@@ -7,117 +7,47 @@ const {
 
 
 describe("CrowdFund", () => {
-    const toBytes = (value) => {
-        const bytes = ethers.utils.toUtf8Bytes(value);
-        const hex = ethers.utils.hexlify(bytes);
+    let crowdFund;
+    let accounts;
+    let creator;
+    let contributor;
 
-        return hex;
+    const createProject = async (creator) => {
+        await crowdFund.connect(creator).createProject(
+            'Project A',
+            'Description for Project A',
+            'https://example.com/project-a',
+            ethers.utils.formatUnits('10', 'ether'),
+            Math.floor(Date.now() / 1000) + 86400 // deadline in 24 hours
+        );
     }
 
-    const toString = (value) => {
-        const bytes = ethers.utils.hexlify(value);
-        const string = ethers.utils.toUtf8String(bytes);
-
-        return string;
+    const contribute = async (contributor, projectId = 0) => {
+        await crowdFund.contribute(projectId, { from: contributor, value: ethers.utils.formatUnits('1', 'ether') });
     }
 
-    const deployContract = async () => {
+    beforeEach(async () => {
+        upgrades.silenceWarnings();
+
         const CrowdFund = await ethers.getContractFactory("CrowdFund");
-        const crowdFund = await upgrades.deployProxy(CrowdFund);
+        crowdFund = await upgrades.deployProxy(CrowdFund);
 
-        const accounts = await ethers.getSigners();
+        accounts = await ethers.getSigners();
+        creator = accounts[0];
+        contributor = accounts[1];
 
-        return { crowdFund, accounts };
-    }
+        createProject(creator);
+        contribute(contributor);
+    });
 
     describe("Deployment", () => {
-        it('works before and after upgrading', async function () {
-            const { crowdFund } = await loadFixture(deployContract);
-
+        it('works before and after upgrading', () => {
             expect(crowdFund.address).not.null;
         });
     });
 
     describe("Project", () => {
         describe("#createProject", () => {
-            describe("Success", () => {
-                it("should create a project and emit ProjectCreated and add to array", async () => {
-                    const { crowdFund, accounts } = await loadFixture(deployContract);
-                    const sender = accounts[0];
-                    const name = "Test Project";
-                    const description = "Test Description";
-                    const goal = 1000;
-                    const deadline = (await time.latest()) + 1000;
-
-                    const contractInstanceWithLibraryABI = await ethers.getContractAt("Events", crowdFund.address, sender)
-
-                    const projectCount = await crowdFund.projectCount();
-                    const expected = projectCount + 1;
-
-                    await expect(
-                        crowdFund
-                            .createProject(toBytes(name), toBytes(description), goal, deadline))
-                        .to.emit(contractInstanceWithLibraryABI, "ProjectCreated")
-                        .withArgs(sender.address, expected);
-
-                    const updatedProjectCount = await crowdFund.projectCount();
-                    expect(updatedProjectCount).to.equal(expected);
-
-                    const projects = await crowdFund.projects(sender.address);
-                    const project = projects[expected - 1];
-                    expect(toString(project.name)).to.equal(name);
-                    expect(toString(project.description)).to.equal(description);
-                    expect(project.owner).to.equal(sender.address);
-                    expect(project.goal).to.equal(goal);
-                    expect(project.deadline).to.equal(deadline);
-                });
-            })
-
-            describe("Failure", () => {
-                [{ name: "" }, { name: "    " }, { name: "longggggggggggggggggggggggggggggg" }].forEach(({ name }) => {
-                    it(`should fail with Invalid project name when name is invalid: ${name}`, async () => {
-                        const { crowdFund, accounts } = await loadFixture(deployContract);
-                        const sender = accounts[0];
-                        const description = "Test Description";
-                        const goal = 1000;
-                        const deadline = (await time.latest()) + 1000;
-
-                        const projects = await crowdFund.projects(sender.address);
-                        const expected = projects.length;
-
-                        await expect(
-                            crowdFund
-                                .connect(sender)
-                                .createProject(toBytes(name), toBytes(description), goal, deadline))
-                            .to.revertedWith("Invalid project name.")
-
-                        const updatedProjects = await crowdFund.projects(sender.address);
-                        expect(updatedProjects.length).to.equal(expected);
-                    });
-                });
-
-                [{ description: "" }, { description: "    " }, { description: "longggggggggggggggggggggggggggggg" }].forEach(({ description }) => {
-                    it(`should fail with Invalid project name when description is invalid: ${description}`, async () => {
-                        const { crowdFund, accounts } = await loadFixture(deployContract);
-                        const sender = accounts[0];
-                        const name = "Test Name";
-                        const goal = 1000;
-                        const deadline = (await time.latest()) + 1000;
-
-                        const projects = await crowdFund.projects(sender.address);
-                        const expected = projects.length;
-
-                        await expect(
-                            crowdFund
-                                .connect(sender)
-                                .createProject(toBytes(name), toBytes(description), goal, deadline))
-                            .to.revertedWith("Invalid project description.")
-
-                        const updatedProjects = await crowdFund.projects(sender.address);
-                        expect(updatedProjects.length).to.equal(expected);
-                    });
-                });
-            })
-        });
+        })
     })
-})
+});

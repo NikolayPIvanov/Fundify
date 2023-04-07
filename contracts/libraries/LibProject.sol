@@ -3,16 +3,17 @@ pragma solidity ^0.8.0;
 
 import {Project} from "../structs/Project.sol";
 import {ProjectEvents} from "../events/ProjectEvents.sol";
+import "hardhat/console.sol";
 
 library LibProject {
-    function createProject(
+    function _createProject(
         Project[] storage projects,
         string memory _name,
         string memory _description,
         string memory _imageLink,
         uint256 _fundingGoal,
         uint256 _deadline
-    ) public {
+    ) internal {
         require(bytes(_name).length > 0, "Project name is required");
         require(
             bytes(_description).length > 0,
@@ -22,10 +23,8 @@ library LibProject {
         require(_fundingGoal > 0, "Funding goal must be greater than 0");
         require(_deadline > 0, "Deadline must be greater than 0");
 
-        uint256 projectId = projects.length + 1;
-
         // Create the project.
-        Project storage project = projects[projectId];
+        Project storage project = projects.push();
         project.name = _name;
         project.description = _description;
         project.imageLink = _imageLink;

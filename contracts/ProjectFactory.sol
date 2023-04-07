@@ -19,7 +19,7 @@ contract ProjectFactory is Initializable {
         uint256 _fundingGoal,
         uint256 _deadline
     ) public {
-        LibProject.createProject(
+        LibProject._createProject(
             projects,
             _name,
             _description,
@@ -28,9 +28,9 @@ contract ProjectFactory is Initializable {
             _deadline
         );
 
-        // Project id is the length of the projects array.
+        // Project id is the length of the projects array minus 1.
         emit ProjectEvents.ProjectCreated(
-            projects.length,
+            projects.length - 1,
             _name,
             _description,
             _imageLink,

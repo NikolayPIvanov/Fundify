@@ -107,7 +107,6 @@ contract Contribution is ProjectFactory {
             uint256 amount = _project.contributions[msg.sender];
             require(amount > 0, "No funds to withdraw");
             _project.contributions[msg.sender] = 0;
-            payable(msg.sender).transfer(amount);
 
             // Remove project ID from userContributions mapping
             uint256[] storage userProjects = userContributions[msg.sender];
@@ -118,6 +117,8 @@ contract Contribution is ProjectFactory {
                     break;
                 }
             }
+
+            payable(msg.sender).transfer(amount);
 
             emit ContributionEvents.ContributionWithdrawn(
                 _projectId,

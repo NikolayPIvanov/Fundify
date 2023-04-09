@@ -21,7 +21,7 @@ library LibProject {
         );
         require(bytes(_imageLink).length > 0, "Image link is required");
         require(_fundingGoal > 0, "Funding goal must be greater than 0");
-        require(_deadline > 0, "Deadline must be greater than 0");
+        require(_deadline > block.timestamp, "Deadline must be greater than 0");
 
         // Create the project.
         Project storage project = projects.push();
@@ -31,7 +31,7 @@ library LibProject {
         project.fundingGoal = _fundingGoal;
         project.fundsRaised = 0;
         project.completed = false;
-        project.deadline = block.timestamp + _deadline;
+        project.deadline = _deadline;
         project.creator = payable(msg.sender);
     }
 }

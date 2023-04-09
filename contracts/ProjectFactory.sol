@@ -35,7 +35,7 @@ contract ProjectFactory is Initializable {
             _description,
             _imageLink,
             _fundingGoal,
-            block.timestamp + _deadline,
+            _deadline,
             msg.sender
         );
     }

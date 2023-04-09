@@ -1,10 +1,8 @@
 const { expect } = require("chai");
-const { BigNumber } = require("ethers");
-const { ethers, upgrades } = require("hardhat");
+const { ethers } = require("hardhat");
 const { time } = require("@nomicfoundation/hardhat-network-helpers");
 
-
-describe.only("LibProject", function () {
+describe("LibProject", function () {
     let testLibProject;
 
     beforeEach(async () => {
@@ -15,15 +13,15 @@ describe.only("LibProject", function () {
     describe("#createProject", () => {
         it("should create a new projects", async () => {
             for (let index = 0; index < 3; index++) {
-                const timeNow = Math.round(Date.now() / 1000);
-                const deadline = BigNumber.from(timeNow + 10000000000);
+                const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
+                const deadline = await time.latest() + ONE_YEAR_IN_SECS;
 
                 await testLibProject.createProject(
                     `Test Project: ${index}`,
                     "Test Description",
                     "https://test.com/image.png",
                     100,
-                    10000000000
+                    deadline
                 );
 
                 // Get the project
@@ -34,7 +32,7 @@ describe.only("LibProject", function () {
                 expect(project.description).to.equal("Test Description");
                 expect(project.imageLink).to.equal("https://test.com/image.png");
                 expect(project.fundingGoal).to.equal(100);
-                expect(project.deadline).to.closeTo(deadline, 10);
+                expect(project.deadline).to.equal(deadline);
             }
         });
 

@@ -30,8 +30,6 @@ describe("Project Factory", () => {
             const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
             const deadline = await time.latest() + ONE_YEAR_IN_SECS;
 
-            const sender = signers[0];
-
             const contractInstanceWithLibraryABI = await ethers.getContractAt("ProjectEvents", projectFactory.address);
 
             await expect(projectFactory.createProject(

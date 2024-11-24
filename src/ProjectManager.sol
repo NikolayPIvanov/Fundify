@@ -63,6 +63,6 @@ contract ProjectManager {
         }
 
         (bool success,) = payable(project.owner).call{value: project.funding}("");
-        require(s);
+        require(success);
     }
 }

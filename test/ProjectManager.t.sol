@@ -12,6 +12,6 @@ contract ProjectManagerTest is Test {
     }
 
     function test_example() public {
-        assertEq(1, 1);
+        assertEq(1 == 1, true);
     }
 }

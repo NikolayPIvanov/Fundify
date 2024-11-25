@@ -10,4 +10,8 @@ contract ProjectManagerTest is Test {
     function setUp() public {
         projectManager = new ProjectManager();
     }
+
+    function test_example() public {
+        assertEq(1, 1);
+    }
 }
